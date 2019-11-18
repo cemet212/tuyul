@@ -142,22 +142,24 @@ function profile($token)
 	}
 	return $ok;
 }
-function valid($token)
+function check($token)
 {
 	$get = request("/gopoints/v3/wallet/vouchers?limit=10&page=1", $token);
 	if ($get['success'] == 1) {
 		$data = '{"promo_code":"GOJEK"}';
 		$block = request("/go-promotions/v1/promotions/enrollments", $token , $data);
 		if ($block['errors'][0]['code'] == "GPS-Proxy-CustomerBlocked"){
+			echo "Account Blocked!!! \n";
 			save("blocked.txt", $token);
 			return "block";
 	} else {
 		save('valid.txt', $token);
 	}
 	} else {
-		echo "Invalid Token!!!\n";
+		echo "Invalid Token!!! \n";
 		save("error_log.txt", json_encode($get));
 		save("invalid.txt", $token);
+		return "invalid";
 	}
 
 }
@@ -318,14 +320,18 @@ if ($type == 1) {
 } elseif ($type == 4) {
 	$voc = [];
 	$block = [];
+	$invalid =[];
+	$valid = [];
 	foreach ($token as $n => $a) {
 		echo "\n";
 		echo "Token: " . $a;
 		echo "\n";
-		if (valid($a) == "block"){
-			echo "Account Blocked!!! \n";
+		if (check($a) == "block"){
 			array_push($block,"block");
-		} else {
+		} elseif (check($a) == "invalid"){
+			array_push($invalid,"invalid");
+		}  else {
+			array_push($valid,"valid");
 			$val = profile($a);
 			if ($val != "") {
 			array_push($voc, $val);
@@ -334,11 +340,19 @@ if ($type == 1) {
 	}	
 	$cvoc = count($voc);
 	$cblock = count($block);
+	$cinvalid = count($invalid);
+	$cvalid = count($valid);
 	echo "\n";
 	echo "Total Account with Voucher 20k = " . $cvoc . "\n";
 	echo "Token with 20k saved in 20k.txt";
 	echo "\n\n";
-	echo "Total Account Blocked 20k = " . $cblock . "\n";
+	echo "Total Blocked Account = " . $cblock . "\n";
 	echo "Blocked Token saved in blocked.txt";
+	echo "\n\n";
+	echo "Total Invalid Token = " . $cinvalid . "\n";
+	echo "Invalid Token saved in invalid.txt";
+	echo "\n\n";
+	echo "Total Valid Token = " . $cvalid . "\n";
+	echo "Valid Token saved in valid.txt";
 	echo "\n\n";
 }
