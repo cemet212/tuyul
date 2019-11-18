@@ -330,7 +330,8 @@ if ($type == 1) {
 			if ($val != "") {
 			array_push($voc, $val);
 			}
-	
+		}
+	}	
 	$cvoc = count($voc);
 	$cblock = count($block);
 	echo "\n";
@@ -340,6 +341,4 @@ if ($type == 1) {
 	echo "Total Account Blocked 20k = " . $cblock . "\n";
 	echo "Blocked Token saved in blocked.txt";
 	echo "\n\n";
-		}
-	}
 }
