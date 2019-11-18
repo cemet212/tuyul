@@ -123,7 +123,7 @@ function profile($token)
 	if ($get['success'] == 1) {
 		if ($get['voucher_stats']['total_vouchers'] != 0) {
 			$ok = null;
-			echo "Total Voucher: " . $get['voucher_stats']['total_vouchers'] . "\n";
+			echo "[*] Total Voucher: " . $get['voucher_stats']['total_vouchers'] . "\n";
 			foreach ($get['data'] as $no => $data) {
 				$num = $no + 1;
 				echo "[$num] " . $data['title'] . " Exp: " . $data['expiry_date'] . "\n";
@@ -137,9 +137,7 @@ function profile($token)
 			echo "You doesn't have any Voucher \n";
 		}
 	} else {
-		echo "Invalid Token!!!\n";
 		save("error_log.txt", json_encode($get));
-		save("invalid.txt", $token);
 		return false;
 	}
 	return $ok;
@@ -148,8 +146,20 @@ function valid($token)
 {
 	$get = request("/gopoints/v3/wallet/vouchers?limit=10&page=1", $token);
 	if ($get['success'] == 1) {
+		$data = '{"promo_code":"GOJEK"}';
+		$block = request("/go-promotions/v1/promotions/enrollments", $token , $data);
+		if ($block['errors'][0]['code'] == "GPS-Proxy-CustomerBlocked"){
+			save("blocked.txt", $token);
+			return "block";
+	} else {
 		save('valid.txt', $token);
 	}
+	} else {
+		echo "Invalid Token!!!\n";
+		save("error_log.txt", json_encode($get));
+		save("invalid.txt", $token);
+	}
+
 }
 function voc($token)
 {
@@ -218,7 +228,7 @@ if ($type == 1) {
 				echo "[*] Your Promo: ";
 				voc($verif);
 				echo "\n";
-				echo "Your Voucher:\n";
+				echo "[*] Your Voucher:\n";
 				profile($verif);
 				echo "\n";
 			} else {
@@ -229,7 +239,7 @@ if ($type == 1) {
 				echo "\n";
 				claim($verif, $code);
 				echo "\n";
-				echo "Your Voucher:\n";
+				echo "[*] Your Voucher:\n";
 				profile($verif);
 				echo "\n";
 			}
@@ -258,7 +268,7 @@ if ($type == 1) {
 				echo "[*] Your Promo: ";
 				voc($verif);
 				echo "\n";
-				echo "Your Voucher:\n";
+				echo "[*] Your Voucher:\n";
 				profile($verif);
 				echo "\n";
 			} else {
@@ -269,7 +279,7 @@ if ($type == 1) {
 				echo "\n";
 				claim($verif, $code);
 				echo "\n";
-				echo "Your Voucher:\n";
+				echo "[*] Your Voucher:\n";
 				profile($verif);
 				echo "\n";
 			}
@@ -286,7 +296,7 @@ if ($type == 1) {
 			echo "[*] Your Promo: ";
 			voc($a);
 			echo "\n";
-			echo "Your Voucher:\n";
+			echo "[*] Your Voucher:\n";
 			profile($a);
 			echo "\n";
 		}
@@ -300,26 +310,36 @@ if ($type == 1) {
 			echo "\n";
 			claim($a, $code);
 			echo "\n";
-			echo "Your Voucher:\n";
+			echo "[*] Your Voucher:\n";
 			profile($a);
 			echo "\n";
 		}
 	}
 } elseif ($type == 4) {
 	$voc = [];
+	$block = [];
 	foreach ($token as $n => $a) {
 		echo "\n";
 		echo "Token: " . $a;
 		echo "\n";
-		valid($a);
-		$val = profile($a);
-		if ($val != "") {
+		if (valid($a) == "block"){
+			echo "Account Blocked!!! \n";
+			array_push($block,"block");
+		} else {
+			$val = profile($a);
+			if ($val != "") {
 			array_push($voc, $val);
-		}
-	}
-	$count = count($voc);
+			}
+	
+	$cvoc = count($voc);
+	$cblock = count($block);
 	echo "\n";
-	echo "Total Account with Voucher 20k = " . $count . "\n";
+	echo "Total Account with Voucher 20k = " . $cvoc . "\n";
 	echo "Token with 20k saved in 20k.txt";
 	echo "\n\n";
+	echo "Total Account Blocked 20k = " . $cblock . "\n";
+	echo "Blocked Token saved in blocked.txt";
+	echo "\n\n";
+		}
+	}
 }
