@@ -154,6 +154,7 @@ function check($token)
 			return "block";
 	} else {
 		save('valid.txt', $token);
+		return "valid";
 	}
 	} else {
 		echo "Invalid Token!!! \n";
@@ -324,7 +325,8 @@ if ($type == 1) {
 	$valid = [];
 	foreach ($token as $n => $a) {
 		echo "\n";
-		echo "Token: " . $a;
+		$num = $n + 1;
+		echo "Token[$num]: " . $a;
 		echo "\n";
 		$check = check($a);
 		if ($check == "block"){
