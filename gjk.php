@@ -326,9 +326,10 @@ if ($type == 1) {
 		echo "\n";
 		echo "Token: " . $a;
 		echo "\n";
-		if (check($a) == "block"){
+		$check = check($a);
+		if ($check == "block"){
 			array_push($block,"block");
-		} elseif (check($a) == "invalid"){
+		} elseif ($check == "invalid"){
 			array_push($invalid,"invalid");
 		}  else {
 			array_push($valid,"valid");
